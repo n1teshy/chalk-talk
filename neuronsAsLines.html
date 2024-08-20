@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="bg-black text-white p-4">
+    
+  </body>
+
+  <script>
+    const BODY_PADDING = 16;
+    let AVLBL_HEIGHT = window.innerHeight - BODY_PADDING * 2;
+    let AVLBL_WIDTH = window.innerWidth - BODY_PADDING * 2;
+
+    const CANVAS_ID = "canvas";
+    let CANVAS_HEIGHT = AVLBL_HEIGHT;
+    let CANVAS_WIDTH = Math.floor(AVLBL_WIDTH * 8 / 12) - BODY_PADDING;
+    const COORDINATES_DELTA = 20;
+    let ORIGIN_X = Math.floor(CANVAS_WIDTH * 0.4);
+    let ORIGIN_Y = Math.floor(CANVAS_HEIGHT * 0.6);
+    let X_MIN = null, Y_MIN = null;
+    let X_MAX = null, Y_MAX = null;
+    let neuronParameters = [];
+    let xInput = null;
+    
+    const CONTROLS_ID = "controls";
+    const COLOR_WHITE = "white";
+
+    const LINE_COLOR = COLOR_WHITE;
+    let ctx = null;
+
+    function getInput(type, placeholder = "") {
+      const elem = document.createElement("input");
+      elem.classList.add("outline-none", "bg-gray-700", "p-1");
+      elem.placeholder = placeholder;
+      elem.type = type;
+      return elem;
+    }
+
+    function getXInput() {
+      const container = document.createElement("div");
+      container.classList.add("w-full", "mb-3");
+      xInput = document.createElement("input");
+      xInput.classList.add("outline-none", "bg-gray-700", "p-1", "w-full");
+      xInput.type = "number";
+      xInput.placeholder = "X";
+      container.appendChild(xInput);
+      return container;
+    }
+
+    function getNeuronInputs(count = 5) {
+      neuronParameters = [];
+      const inputs = [];
+      const classes = ["w-full", "flex", "justify-between", "mb-3"]
+      for(let i = 1; i <= count; i++) {
+        const container = document.createElement("div");
+        container.classList.add(...classes);
+        const W = getInput("number", `W${i}`);
+        const b = getInput("number", `B${i}`);
+        container.appendChild(W);
+        container.appendChild(b);
+        inputs.push(container);
+        neuronParameters.push({"m": W, "c": b});
+      }
+      return inputs;
+    }
+
+    function getNextButton() {
+      const container = document.createElement("div");
+      container.classList.add("w-full", "text-end");
+      const button = document.createElement("button");
+      button.classList.add("bg-gray-700", "p-2", "hover:bg-gray-600");
+      button.innerText = "Forward";
+      button.onclick = () => console.log("hello");
+      container.appendChild(button);
+      return container;
+    }
+
+    function addRandomInputs() {
+      xInput.value = Math.round(Math.random() * 1000) / 100;
+      for(let i = 0; i < neuronParameters.length; i++) {
+        neuronParameters[i].m.value = Math.round(Math.random() * 1000) / 100;
+        neuronParameters[i].c.value = Math.round(Math.random() * 1000) / 100;
+      }
+    }
+
+    function drawLine(x1, y1, x2, y2, {color = LINE_COLOR, width = 1} = {}) {
+      const lw = ctx.lineWidth, ss = ctx.strokeStyle;
+      ctx.lineWidth = width;
+      ctx.strokeStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.lineWidth = lw;
+      ctx.strokeStyle = ss;
+    }
+
+    function drawCartesianLine(x1, y1, x2, y2, options) {
+      // x1, y1, x2, y2 are all points on the cartesian plane
+      // not coordinates on the canvas
+      x1 = ORIGIN_X + x1 * COORDINATES_DELTA;
+      x2 = ORIGIN_X + x2 * COORDINATES_DELTA;
+      y1 = ORIGIN_Y - y1 * COORDINATES_DELTA;
+      y2 = ORIGIN_Y - y2 * COORDINATES_DELTA;
+      drawLine(x1, y1, x2, y2, options);
+    }
+
+    function drawSlopeIntercept(m, c) {
+      const y1 = m * X_MIN + c, y2 = m * X_MAX + c;
+      drawCartesianLine(X_MIN, y1, X_MAX, y2);
+    }
+
+    function drawCartesianPoint(x, y, radius) {
+      x = ORIGIN_X + x * COORDINATES_DELTA;
+      y = ORIGIN_Y - y * COORDINATES_DELTA;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawAxes() {
+      ctx.textAlign = "right";
+      for(let i = 1;; i += 1) {
+        const del = i * COORDINATES_DELTA;
+        if(del >= Math.max(CANVAS_HEIGHT, CANVAS_WIDTH)) {
+          break;
+        }
+        if(ORIGIN_X - del > 0) { // -x axis
+          ctx.fillText(`-${i}`, ORIGIN_X - del, ORIGIN_Y + 10);
+          X_MIN = -i;
+        }
+        if(ORIGIN_X + del < CANVAS_WIDTH) { // +x axis
+          ctx.fillText(`${i}`, ORIGIN_X + del, ORIGIN_Y + 10);
+          X_MAX = i;
+        }
+        if(ORIGIN_Y - del > 0) { // +y axis
+          ctx.fillText(`${i}`, ORIGIN_X - 5, ORIGIN_Y - del);
+          Y_MAX = i;
+        }
+        if(ORIGIN_Y + del < CANVAS_HEIGHT) { // -y axis
+          ctx.fillText(`-${i}`, ORIGIN_X - 5, ORIGIN_Y + del);
+          Y_MIN = -i;
+        }
+      }
+      drawCartesianLine(0, Y_MAX, 0, Y_MIN, {width: 2});
+      drawCartesianLine(X_MIN, 0, X_MAX, 0, {width: 2});
+    }
+
+    function bigBang() {
+      AVLBL_HEIGHT = window.innerHeight - BODY_PADDING * 2;
+      AVLBL_WIDTH = window.innerWidth - BODY_PADDING * 2;
+
+      CANVAS_HEIGHT = AVLBL_HEIGHT;
+      CANVAS_WIDTH = Math.floor(AVLBL_WIDTH * 8 / 12) - BODY_PADDING;
+      ORIGIN_X = Math.floor(CANVAS_WIDTH * 0.4);
+      ORIGIN_Y = Math.floor(CANVAS_HEIGHT * 0.6);
+
+      const container = document.createElement("div");
+      container.style.height = `${AVLBL_HEIGHT}px`;
+      container.style.width = `${AVLBL_WIDTH}px`;
+      container.classList.add(...["flex"]);
+
+      const canvas = document.createElement("canvas");
+      canvas.id = CANVAS_ID;
+      canvas.classList.add("bg-gray-800");
+      canvas.height = AVLBL_HEIGHT;
+      canvas.width = Math.floor(AVLBL_WIDTH * 8 / 12);
+      container.appendChild(canvas);
+      ctx = canvas.getContext("2d");
+      ctx.strokeStyle = LINE_COLOR;
+      ctx.fillStyle = LINE_COLOR;
+
+      const controls = document.createElement("div");
+      controls.style.height = `${CANVAS_HEIGHT}px`;
+      controls.style.width = `${CANVAS_WIDTH}px`;
+      controls.classList.add("ml-4", "p-2", "bg-gray-800");
+      // Add X input
+      controls.appendChild(getXInput());
+      // Add neuron parameter inputs
+      for(const child of getNeuronInputs()) {
+        controls.appendChild(child);
+      }
+      controls.appendChild(getNextButton());
+      container.appendChild(controls);
+      // draw origin
+      drawCartesianPoint(0, 0, 4);
+      // draw axes
+      drawAxes();
+      addRandomInputs();
+      document.body.appendChild(container);
+    }
+
+    window.onload = bigBang;
+    window.onresize = () => {
+      document.body.innerHTML = "";
+      bigBang();
+    };
+  </script>
+</html>
