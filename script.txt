@@ -1,14 +1,21 @@
 Topics:
  - AI v/s ML
+ - links:
+ - - dijkstra (https://algorithm-visualization.netlify.app/dijkstra-algorithm/)
+ - - a-star (https://nomad-navigator.netlify.app/)
+
+ - Algorithms
+ - links:
+ - - sorting visualization (https://www.cs.usfca.edu/~galles/visualization/ComparisonSort.html)
+ 
  - Techniques used for machine learning
  - Neural networks
- - LLM
+ - Language models
  - Huggingface
  - AbbVie OCR
 
-links:
- - dijkstra (https://algorithm-visualization.netlify.app/dijkstra-algorithm/)
- - a-star (https://dysfunctional-worm.netlify.app/)
+Todos:
+ - A function with a local variable that keeps adjusting itself
 
 
 1. Intro
@@ -44,6 +51,11 @@ for a task like this, the ideal solution would be a system that can learn on its
 on its own without you having to write code for every condition is called machine learning. The recent hype is more about
 machine learning than AI as a whole because after a long while, maybe a few decades, we finally have the compute, data and
 research to get machines to learn more and more complicated tasks.
+---------------------------------------------------------------------------------------------------------------------
+
+- Algorithms
+TODO: this section feels separated from its complementary partner
+
 ---------------------------------------------------------------------------------------------------------------------
 
 3. Techniques used for machine learning
@@ -117,5 +129,15 @@ other node's input, and this keeps going till the end of the neural network
 it can be expressed like this:
 input x -> neuron1(x) = W1.x + b1 -> neuron2(x) = W2.x + b2 -> neuron3(x) = W3.x + b3 -> output y
 
-or like this, when on steroids, just more neurons feeding into other more neurons:
-<insert multi-layer-perceptron here>
+the represenatational capability of the network can be increase by increasing the number of parameters in it like this
+
+  /‾ neuron1(x: W1.x + b1) = x1 -> neuron2(x1: W2.x1 + b2) = x2 -> neuron3(x2: W3.x2 + b3) = x3 ‾\
+x                                                                                                 + -> y
+  \_ neuron1(x: W1.x + b1) = x1 -> neuron2(x1: W2.x1 + b2) = x2 -> neuron3(x2: W3.x2 + b3) = x3 _/
+
+---------------------------------------------------------------------------------------------------------------------
+
+5. Language models
+
+So, neural networks are these machines that can learn to predict the desired numerical output for a numerical input, by
+adjusting their local variables or parameters as they're called in fancyland, 
